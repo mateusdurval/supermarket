@@ -1,0 +1,60 @@
+.modal-car {
+    display: flex;
+
+    position: fixed;
+    top: 0;
+    right: -400px;
+
+    width: 400px;
+    height: 100vh;
+
+    padding: 50px 70px;
+
+    transition: 1s;
+
+    background: rgb(206, 26, 26);
+    z-index: 9999;
+}
+
+.modal-car .content {
+    display: flex;
+    flex-direction: column;    
+}
+
+
+.modal-car .content h3 {
+    color: #f1f1f1;
+    font-weight: 900;
+    margin-bottom: 20px;
+}
+
+.modal-car .content h3 i {
+    color: #f1f1f1;
+    margin-left: 4px;
+    transform: rotate(-20deg);
+}
+
+.modal-car .content .warning {
+    display: flex;
+}
+
+.modal-car .content .warning h5 {
+    color: #FFF;
+}
+
+.modal-car .hide {
+    position: absolute;
+    top: 50%;
+    left: 20px;
+
+    font-size: 40px;
+
+    cursor: pointer;
+    color: #f1f1f1;
+
+    transition: all 0.3s;
+}
+
+.modal-car .hide:hover {
+    /* transform: rotate(370deg); */
+}
