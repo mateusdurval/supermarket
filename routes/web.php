@@ -20,4 +20,21 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-Route::post('/request/add-product', 'RequestController@index');
+Route::middleware(['auth', 'is.admin'])->group(function () { 
+    Route::prefix('admin')->group(function () {
+        Route::prefix('products')->group(function () {
+            Route::get('read', 'ProductController@index2')->name('products');
+            Route::get('edit/{id}', 'ProductController@edit')->name('products-edit');
+            Route::post('update', 'ProductController@update')->name('products-update');
+            Route::get('create', 'ProductController@create')->name('products-create');
+            Route::post('store', 'ProductController@store')->name('products-store');
+            Route::post('destroy/{id}', 'ProductController@destroy')->name('products-destroy');
+            Route::get('search', 'ProductController@search')->name('products-search');
+        });
+
+        Route::prefix('requests')->group(function () {
+            Route::get('read', 'RequestController@index')->name('requests');
+            Route::post('create', 'RequestController@create')->name('requests-create');
+        });
+    });
+});

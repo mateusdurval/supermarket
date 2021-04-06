@@ -8,7 +8,11 @@ class Request extends Model
 {
     protected $fillable = ['user_id', 'product_id', 'total_amout'];
 
-    public function Product() {
-        $this->belongsMany(Product::class, 'product_id', 'id');
+    public function product() {
+        return $this->hasMany(Product::class, 'id', 'product_id');
+    }
+
+    public function user() {
+        return $this->hasMany(User::class, 'id');
     }
 }

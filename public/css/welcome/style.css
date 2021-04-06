@@ -5,6 +5,8 @@
     flex-direction: column;
 
     background: #f1f1f1;
+
+    position: relative;
 }
 
 #welcome .header-app {
@@ -92,7 +94,7 @@
 
     flex-direction: column;
 
-    padding: 0px 200px 0px 200px;
+    padding: 0px 170px 0px 170px;
 }
 
 #welcome .header-app .content-header .contents {
@@ -108,7 +110,7 @@
 }
 
 #welcome .header-app .content-header .contents h4 {
-    width: 17%;
+    width: 19%;
     text-align: center;
     color: #FFF;
     font-size: 19px;
@@ -172,7 +174,7 @@
 }
 
 #welcome .header-app .content-header .category ul li  {
-    width: 160px;
+    width: 170px;
 
     display: flex;
     justify-content: center;
@@ -223,7 +225,7 @@
 #welcome #products {
     display: flex;
 
-    padding: 0 100px 0 100px;
+    padding: 0px 80px;
 
     justify-content: center;
     align-items: center;
@@ -231,11 +233,10 @@
     flex-direction: row;
 
     margin-top: 30px;
-    margin-bottom: 150px;
 }
 
 #welcome #products .product {
-    margin-left: 30px;
+    margin-right: 20px;
     margin-bottom: 20px;
 }
 
@@ -286,4 +287,49 @@
     color: rgb(243, 45, 45);
     font-weight: 900;
     font-size: 23px;
+}
+
+#welcome #paginate {
+    display: flex;
+    justify-content: center;
+    padding: 0 80px;
+    margin-bottom: 50px;
+}
+
+#welcome .btn-car {
+    position: fixed;
+
+    bottom: 20px;
+    right: 20px;
+
+    background: rgb(243, 45, 45);
+
+    width: 70px;
+    height: 70px;
+
+    border-radius: 70px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: #FFF;
+    font-size: 30px;
+
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+#welcome .btn-car:hover {
+    width: 80px;
+    height: 80px;
+    font-size: 40px;
+}
+
+#welcome .btn-car i:hover {
+    transition: 0.3s;
+}
+
+#welcome .btn-car i:hover {
+    transform: rotate(-20deg);
 }
