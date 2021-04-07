@@ -40,7 +40,7 @@
                                     <span style="margin: 0 10px" class="value">1</span>
                                     <button class="btn btn-sm btn-success add">+</button>
                                 </td>
-                                <td><a href="javascript:void(0)" class="btn btn-sm btn-dark btn-remove-request" data-id="{{ $product->id }}" style="color: #FFF;">Remover <i class="far fa-trash-alt"></i></a></td>
+                                <td><a href="javascript:void(0)" class="btn-remove-request" data-id="{{ $product->id }}" style="color: #333; border: 1px solid #333; padding: 4px; border-radius: 4px">Remover <i class="far fa-trash-alt"></i></a></td>
                             </tr>
                             @endforeach
                         @endforeach
@@ -53,7 +53,7 @@
                     </tbody>
                 </table>   
 
-                <a href="/"><i class="fas fa-angle-left"></i> Voltar</a>             
+                <a href="javascript:void(0)" onclick="window.history.back(-1)"><i class="fas fa-angle-left"></i> Voltar</a>             
             </div>
         </div>
     @endif
@@ -82,7 +82,7 @@
     <script>
         $(document).ready(function() {
             let newValue, currentValue = 0;
-            let productId, buttonRemove;
+            let productId;
 
             $(".add").on('click', function() {
                 currentValue = parseInt($(".value").html())
@@ -92,7 +92,7 @@
             });
 
             $(".remove").on('click', function() {   
-                lcurrentValue = parseInt($(".value").html());
+                currentValue = parseInt($(".value").html());
                 if (currentValue == 1) {
                     return;
                 }
@@ -103,7 +103,7 @@
             $(".btn-remove-request").on('click', function() {   
                 productId = $(this).data('id');
                 $(".modal").modal('toggle');
-                buttonRemove = $(this);
+                let htmlClass = $(this);
                 
                 $(".btn-confirm-delete-request").on('click', function() {
                     $.ajax({
@@ -113,8 +113,8 @@
                     }).done(function(res) {
                         console.log(res)
                         if (res.success) {
-                            if (buttonRemove != null) {
-                                $(buttonRemove).closest('tr').remove();
+                            if (htmlClass != null) {
+                                $(htmlClass).closest('tr').remove();
                                 $(".modal").modal('toggle');
                             }
                         }
