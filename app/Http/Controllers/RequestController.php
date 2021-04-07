@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request as HttpRequest;
 use App\Request;
+use Exception;
 
 class RequestController extends Controller
 {
+    public $totalValues = [];
 
     public function index() {
         try {
@@ -18,23 +20,18 @@ class RequestController extends Controller
 
             $allPrices = array_map(function($request) {
                 $prices = array_map(function($product) {
-                    $toFloat = str_replace(",",".", $product['price']);
-                    return $toFloat;
+                    $priceFormatted = str_replace(",",".", $product['price']);
+                    if (!empty($priceFormatted)) {
+                        $this->totalValues[] = $priceFormatted;
+                        return $priceFormatted;
+                    }
                 }, $request['product']);
                 return $prices;
             }, $requests->toArray());
 
-            $myCollection = collect([]);
-            foreach($allPrices as $values) {
-                foreach($values as $price) {
-                    echo $price;
-                    $myCollection->merge($price);
-                }
-            }
-            
-            dd($myCollection);
+            $total = array_sum($this->totalValues);
 
-            return view('admin.requests.index')->with(['requests' => $requests]);
+            return view('admin.requests.index')->with(['requests' => $requests, 'total' => $total]);
         } catch(Exception $err) {
             return $err->getMessage();
         }
@@ -44,6 +41,13 @@ class RequestController extends Controller
         try {
             $productId = $request->productId;
             $productPrice = $request->productPrice;
+            $userId = auth()->user()->id;
+
+            $verifyIfAlreadyExist = Request::where('user_id', $userId)->where('product_id', $productId)->get()->first();
+
+            if ($verifyIfAlreadyExist) {
+                throw new Exception("Este produto já foi adicionado no carrinho.", 409);
+            }
 
             $request = Request::create([
                 'user_id' => auth()->user()->id,
@@ -54,11 +58,34 @@ class RequestController extends Controller
                 throw new Exception("Error Processing Request", 509);
             }
 
-            return [
-                'success' => true,
-                'message' => 'O produto foi adicionado ao seu carrinho!'
-            ];
+            $response = array(
+                "success" => true,
+                "message" => 'O produto foi adicionado ao seu carrinho!'
+            );
 
+            return json_encode($response);  
+
+        } catch(Exception $err) {
+            $response = array( 
+                "success" => false, 
+                "message" => $err->getMessage()
+            ); 
+
+            return json_encode($response);
+        }
+    }
+
+    public function destroy($id) {
+        try {
+            $productFromRequest = Request::where('product_id', $id)->delete();
+            if ($productFromRequest) {
+                return [
+                    'success' => true,
+                    'message' => 'O produto foi removido do seu carrinho!'
+                ];
+            } else {
+                throw new Exception("Houve um erro ao remover o produto do carrinho.", 1);
+            }
         } catch(Exception $err) {
             return $err->getMessage();
         }

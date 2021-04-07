@@ -35,6 +35,7 @@ Route::middleware(['auth', 'is.admin'])->group(function () {
         Route::prefix('requests')->group(function () {
             Route::get('read', 'RequestController@index')->name('requests');
             Route::post('create', 'RequestController@create')->name('requests-create');
+            Route::post('destroy/{id}', 'RequestController@destroy')->name('requests-delete');
         });
     });
 });

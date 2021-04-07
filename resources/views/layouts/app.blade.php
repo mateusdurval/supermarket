@@ -101,7 +101,12 @@
                 </div>
             </header>
 
-            <a href="" class="btn-car"><i class="fas fa-shopping-cart "></i></a>
+            @if (Auth::check())
+                <a href="{{ route('requests') }}" class="btn-car"><i class="fas fa-shopping-cart "></i></a>
+            @else
+                <a href="/login" class="btn-car"><i class="fas fa-shopping-cart "></i></a>
+            @endif
+            
             @yield('content')
         </div>
     </body>

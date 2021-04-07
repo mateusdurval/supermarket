@@ -62,7 +62,7 @@
     </div>
 
     <!-- TOAST -->
-    <div class="toast my-toast" data-delay="3000" role="alert" aria-live="assertive" aria-atomic="true" style="position: absolute; top: 45%; right: 10px;">
+    <div class="toast my-toast" data-delay="4000" role="alert" aria-live="assertive" aria-atomic="true" style="position: absolute; top: 45%; right: 10px;">
         <div class="toast-header">
             <strong class="mr-auto">Notificação</strong>
             <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
@@ -71,7 +71,7 @@
         </div>
         <div class="toast-body">
            <p class="message"></p>
-           <a href="{{ route('requests') }}" class="btn btn-sm btn-primary">Clique aqui para vê-lo</a>
+           <a href="{{ route('requests') }}" class="btn btn-sm btn-primary btn-see-car">Clique aqui para vê-lo.</a>
         </div>
     </div>
 
@@ -92,9 +92,15 @@
                         productPrice: productPrice
                     }
                 }).done(function(res) {
-                    if (res.success) {
+                    response = JSON.parse(res);
+                    if (response.success) {
                         $(".my-toast").toast('show');
-                        $(".message").html(res.message);
+                        $(".message").html(response.message);
+                    } else {
+                        $(".message").html(response.message);
+                        $(".my-toast").toast('show');
+                        $(".toast").css({ background: '#f32d2d', color: '#FFF' })
+                        $(".btn-see-car").css({ background: '#FFF', color: '#333', border: 'none' })
                     }
                 })
             });
