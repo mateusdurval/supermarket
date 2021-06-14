@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        @if(Session::has('message'))
+        @if (Session::has('message'))
             <p class="alert {{ Session::get('alert-class', 'alert-info') }}">{{ Session::get('message') }}</p>
         @endif
         <div class="row" style="margin-bottom: 15px">
@@ -56,7 +56,7 @@
                                         <td><p style="background: #333; border-radius: 5px; padding: 2px; color: #FFF">Não<p></td>
                                     @endif
                                 </td>
-                                <td>{{ $product->amount }}</td>
+                                <td>{{ $product->amount }} unidades</td>
                                 <td>R$ {{ $product->price }}</td>
                                 <td><a href="{{ route('products-edit', $product->id) }}"><i class="fas fa-edit" style="color: #333;"></i></a></td>
                                 <td><a href="javascript:void(0)" data-id="{{ $product->id }}" class="btn-delete"><i class="fas fa-trash-alt" style="color: #333;"></i></a></td>

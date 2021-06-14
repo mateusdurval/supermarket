@@ -37,7 +37,11 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function Request() {
+    public function request() {
         $this->belongsMany(Request::class, 'request_id', 'id');
+    }
+
+    public function user_has_adresses() {
+        $this->hasOne(UserHasAdresses::class, 'id');
     }
 }

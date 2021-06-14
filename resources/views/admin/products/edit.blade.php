@@ -42,7 +42,6 @@
                         <div class="col-md-3">
                         <label for="category">Categoria</label>
                             <select name="category" id="category" class="form-control" required>
-                                <option value="{{ $product->category->category }}" selected>{{ $product->category->category }}</option>
                                 @foreach($categories as $category)
                                     <option value="{{ $category->category }}">{{ $category->category }}</option>
                                 @endforeach

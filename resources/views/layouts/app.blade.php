@@ -16,10 +16,11 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
         <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF" crossorigin="anonymous"></script>        
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF" crossorigin="anonymous"></script>     
 
         <link href="{{ asset('css/global.css') }}" type="text/css" rel="stylesheet">
         <link href="{{ asset('css/welcome/style.css') }}" type="text/css" rel="stylesheet">
+        <link href="{{ asset('css/address/style.css') }}" type="text/css" rel="stylesheet">
     </head>
     <body>
         <div id="welcome">
@@ -58,7 +59,7 @@
                                                 {{ __('(Admin)') }}
                                             @endif
                                         </a>
-                                        <p style="font-size: 15px; margin-top: -5px">CPF: {{ Auth::user()->cpf }}</p>
+                                        <p style="font-size: 15px; margin-top: -5px">CPF: {{ Auth::user()->cpf, -4 }}</p>
 
                                         <div class="dropdown-menu dropdown-menu-left" aria-labelledby="navbarDropdown">
                                         
@@ -66,9 +67,16 @@
                                                 {{ __('Sair') }}
                                             </a>
 
+                                            <a class="dropdown-item" href="{{ route('reset-password') }}" style="color: #000">
+                                                {{ __('Alterar senha') }}
+                                            </a>
+
                                             @if( Auth::user()->isAdmin )
                                                 <a class="dropdown-item" href="{{ route('products') }}" style="color: #000">
                                                     {{ __('Produtos') }}
+                                                </a>
+                                                <a class="dropdown-item" href="{{ route('request-read') }}" style="color: #000">
+                                                    {{ __('Pedidos') }}
                                                 </a>
                                             @endif
 
@@ -84,7 +92,7 @@
                         @if (!Auth::check())
                             <a href="/login" class="showModal"><i class="fas fa-shopping-cart "></i> Meu carrinho</a>
                         @else
-                            <a href="{{ route('requests') }}" class="showModal"><i class="fas fa-shopping-cart "></i> Meu carrinho</a>
+                            <a href="{{ route('carts') }}" class="showModal"><i class="fas fa-shopping-cart "></i> Meu carrinho</a>
                         @endif
                     </div>
 
@@ -102,7 +110,7 @@
             </header>
 
             @if (Auth::check())
-                <a href="{{ route('requests') }}" class="btn-car"><i class="fas fa-shopping-cart "></i></a>
+                <a href="{{ route('carts') }}" class="btn-car"><i class="fas fa-shopping-cart "></i></a>
             @else
                 <a href="/login" class="btn-car"><i class="fas fa-shopping-cart "></i></a>
             @endif

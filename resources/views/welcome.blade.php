@@ -40,9 +40,15 @@
                     <img src="{{ asset("storage/{$product->image}") }}" class="card-img-top" alt="produto" style="padding: 15px; max-widht: 100px; max-height: 300px">
                     <div class="card-body">
                         <h5 class="card-title">{{ $product->name }} - {{ $product->brand }} <p>FRETE GRÁTIS!</p></h5>
-                        <button class="btn btn-primary add-request" data-price="{{ $product->price }}" data-id="{{ $product->id }}"  style="background: rgb(250, 206, 8); color: #FFF; font-weight: bold; border: none">
-                            <i class="fas fa-cart-plus"></i> Adicionar ao carrinho
-                        </button>
+                        @if (Auth::check())
+                            <a href="javascript:void(0)" class="btn btn-primary add-carts" data-price="{{ $product->price }}" data-id="{{ $product->id }}" style="background: rgb(250, 206, 8); color: #FFF; font-weight: bold; border: none">
+                                <i class="fas fa-cart-plus"></i> Adicionar ao carrinho
+                            </a>
+                        @else
+                            <a href="/login" class="btn btn-primary" style="background: rgb(250, 206, 8); color: #FFF; font-weight: bold; border: none">
+                                <i class="fas fa-cart-plus"></i> Adicionar ao carrinho
+                            </a>
+                        @endif
                     </div>
 
                     <div class="list-group list-group-flush">
@@ -71,7 +77,7 @@
         </div>
         <div class="toast-body">
            <p class="message"></p>
-           <a href="{{ route('requests') }}" class="btn btn-sm btn-primary btn-see-car">Clique aqui para vê-lo.</a>
+           <a href="{{ route('carts') }}" class="btn btn-sm btn-primary btn-see-car">Clique aqui para vizualizá-lo</a>
         </div>
     </div>
 
@@ -80,12 +86,12 @@
         $(document).ready(function() {
             let productId;
             let productPrice;
-            $(".add-request").on('click', function() {
+            $(".add-carts").on('click', function() {
                 productId = $(this).data('id');
                 productPrice = $(this).data('price');
                 $.ajax({
                     method: 'POST',
-                    url: '/admin/requests/create',
+                    url: '/carts/create',
                     data: {
                         "_token": "{{ csrf_token() }}", 
                         productId: productId, 
@@ -99,7 +105,7 @@
                     } else {
                         $(".message").html(response.message);
                         $(".my-toast").toast('show');
-                        $(".toast").css({ background: '#f32d2d', color: '#FFF' })
+                        $(".toast").css({ background: 'rgba(0,0,0,0.6)', color: '#FFF' })
                         $(".btn-see-car").css({ background: '#FFF', color: '#333', border: 'none' })
                     }
                 })

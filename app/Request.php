@@ -3,16 +3,25 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\StatusRequest;
 
 class Request extends Model
 {
-    protected $fillable = ['user_id', 'product_id', 'total_amout'];
+    protected $fillable = [
+        'user_id', 'address_id', 'card_id', 'status', 'checkout'
+    ];
 
-    public function product() {
-        return $this->hasMany(Product::class, 'id', 'product_id');
+    protected $table = 'requests';
+
+    public function address() {
+        return $this->hasOne(Address::class, 'id');
+    }
+
+    public function card() {
+        return $this->hasOne(Card::class, 'id');
     }
 
     public function user() {
-        return $this->hasMany(User::class, 'id');
+        return $this->hasOne(User::class, 'id');
     }
 }

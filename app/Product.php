@@ -10,7 +10,7 @@ class Product extends Model
         'name', 'category_id', 'amount', 'price', 'sale', 'image', 'brand', 'description'
     ];
 
-    public function category() {
-        return $this->hasOne(ProductHasCategory::class, 'id');
+    public function product_has_categories() {
+        return $this->hasMany(ProductHasCategories::class, 'product_id', 'id');
     }
 }

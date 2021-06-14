@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request as HttpRequest;
 use App\Request;
+use App\Cart;
+
 use Exception;
 
 class RequestController extends Controller
@@ -12,83 +14,134 @@ class RequestController extends Controller
 
     public function index() {
         try {
-            $user = auth()->user();
-            $requests = Request::where('user_id', $user->id)->with('product')->get();
-            if (!$requests) {
-                throw new Exception("Error Processing Request", 509); 
+            $total = Request::count();
+            $requests = Request::with(['address', 'card', 'user'])->get();
+            
+            if ($requests) {
+                return view('admin.requests.index')->with(['requests' => $requests, 'total' => $total]);
+            } else {
+                throw new Exception("Error Processing Request", 509);
             }
-
-            $allPrices = array_map(function($request) {
-                $prices = array_map(function($product) {
-                    $priceFormatted = str_replace(",",".", $product['price']);
-                    if (!empty($priceFormatted)) {
-                        $this->totalValues[] = $priceFormatted;
-                        return $priceFormatted;
-                    }
-                }, $request['product']);
-                return $prices;
-            }, $requests->toArray());
-
-            $total = array_sum($this->totalValues);
-
-            return view('admin.requests.index')->with(['requests' => $requests, 'total' => $total]);
         } catch(Exception $err) {
             return $err->getMessage();
         }
     }
 
-    public function create(HttpRequest $request) {
+    public function manage($requestId) {
         try {
-            $productId = $request->productId;
-            $productPrice = $request->productPrice;
-            $userId = auth()->user()->id;
+            $request = Request::where('id', $requestId)->with('user', 'address')->get()->first();
+            $cartUser = Cart::where('user_id', $request->user_id)->with('products')->get();
 
-            $verifyIfAlreadyExist = Request::where('user_id', $userId)->where('product_id', $productId)->get()->first();
-
-            if ($verifyIfAlreadyExist) {
-                throw new Exception("Este produto já foi adicionado no carrinho.", 409);
-            }
-
-            $request = Request::create([
-                'user_id' => auth()->user()->id,
-                'product_id' => $productId,
-            ]);
-
-            if (!$request) {
+            if (!$request || !$cartUser) {
                 throw new Exception("Error Processing Request", 509);
             }
 
-            $response = array(
-                "success" => true,
-                "message" => 'O produto foi adicionado ao seu carrinho!'
-            );
-
-            return json_encode($response);  
+            return view('admin.requests.manage')->with(['request' => $request, 'cartUser' => $cartUser]);
 
         } catch(Exception $err) {
-            $response = array( 
-                "success" => false, 
-                "message" => $err->getMessage()
-            ); 
+            return $err->getMessage();
+        }
+    }
+
+    public function updateStatus($id, $newStatus) {
+        try {
+            $request = Request::where('id', $id)->get()->first();
+            if (!$request) {
+                throw new Exception("Error Processing Request", 404);
+            }
+            $request->status = $newStatus;
+            if ($request->save()) {
+                return back();
+            }
+        } catch(Exception $err) {
+            return $err->getMessage();
+        }
+    }
+
+    public function store(HttpRequest $request) {
+        try {
+            $userId = auth()->user()->id;
+
+            $data = [
+                'user_id' => $userId,
+                'address_id' => $request->addressId,
+                'card_id' => $request->cardId,
+                'status' => 'AWAIT_CHECKOUT',
+                'checkout' => false
+            ];
+
+            $request = Request::create($data);
+
+            if (!$request) {
+                throw new Exception("Error Processing Request", 509);
+            } 
+
+            $response = array(
+                "success" => true,
+            );
+
+            return json_encode($response); 
+        } catch(Exception $err) {
+            return $err->getMessage();
+        }
+    }
+
+    public function checkout(HttpRequest $request) {
+        $requestId = $request->requestId;
+
+        $request = Request::where(['id' => $requestId, 'status' => 'AWAIT_CHECKOUT'])->get()->first();
+
+        if (!$request) {
+            throw new Exception("Error Processing Request", 509);
+        }
+
+        $request->checkout = true;
+        $request->status = 'PREPARATION';
+
+        if ($request->save()) {
+            $response = array(
+                "success" => true,
+                "message" => 'Pedido realizado com sucesso!'
+            );
 
             return json_encode($response);
         }
     }
 
-    public function destroy($id) {
+    public function review() {
         try {
-            $productFromRequest = Request::where('product_id', $id)->delete();
-            if ($productFromRequest) {
-                return [
-                    'success' => true,
-                    'message' => 'O produto foi removido do seu carrinho!'
-                ];
-            } else {
-                throw new Exception("Houve um erro ao remover o produto do carrinho.", 1);
+            $userId = auth()->user()->id;
+            $request = Request::where(['user_id' => $userId])->with(['address', 'card'])->get()->first();
+
+            $carts = Cart::where('user_id', $userId)->with('products')->get();
+
+            $allPrices = array_map(function($cart) {
+                $prices = array_map(function($product, $amount) {
+                    $priceFormatted = str_replace(",",".", $product['price']);
+                    if (!empty($priceFormatted)) {
+                        $this->totalValues[] = $priceFormatted * $amount;
+                        return $priceFormatted;
+                    }
+                }, $cart['products'], [ $cart['amount'] ]);
+                $this->auxAmount = $cart['amount'];
+                return $prices;
+            }, $carts->toArray());
+    
+            $total = array_sum($this->totalValues);
+
+            if (!$request || !$carts) {
+                throw new Exception("Error Processing Request", 509);
             }
+
+            return view('user.request.review')->with(['request' => $request, 'carts' => $carts, 'total' => $total]);
         } catch(Exception $err) {
             return $err->getMessage();
         }
     }
+
+    public function status() {
+        $userId = auth()->user()->id;
+        $request = Request::where('user_id', $userId)->with(['address', 'card'])->get()->first();
+        return view('user.request.status')->with(['request' => $request]);
+    }
 }
-    

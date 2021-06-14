@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\ProductHasCategories;
 use App\Product;
-use App\ProductHasCategory;
+use App\Category;
+use App\Request;
+
 use Exception;
 use Session;
-use Illuminate\Http\Request;
+
+use Illuminate\Http\Request as HttpRequest;
 
 class ProductController extends Controller
 {
@@ -15,21 +19,7 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
-    {
-        try {
-            $products = Product::paginate(8);
-            $categories = ProductHasCategory::all();
-            if (!$products && !$categories) {
-                throw new Exception("Error Processing Request", 509);
-            }
-            return view('welcome')->with(['products' => $products, 'categories' => $categories]);
-        } catch(Exception $err) {
-            return $err->getMessage();
-        }
-    }
-
-    public function index2(Request $request)
+    public function index(HttpRequest $request)
     {
         try {
             $total = Product::count();
@@ -40,9 +30,10 @@ class ProductController extends Controller
                 throw new Exception("Error Processing Request", 509);
             }
         } catch(Exception $err) {
-            return $err.getMessage();
+            return $err->getMessage();
         }
     }
+
     /**
      * Show the form for creating a new resource.
      *
@@ -52,10 +43,7 @@ class ProductController extends Controller
     public function create()
     {
         try {
-            $categories = ProductHasCategory::all();
-            if (!$categories) {
-                throw new Exception("Error Processing Request", 500);
-            }
+            $categories = Category::all();
             return view('admin.products.create')->with('categories', $categories);
         } catch(Exception $err) {
             return $err->getMessage();
@@ -68,7 +56,7 @@ class ProductController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(HttpRequest $request)
     {
         try {
             $pathImage = null;
@@ -77,11 +65,8 @@ class ProductController extends Controller
                 $pathImage = $request->image->store('products');
             }
 
-            $categoryId = ProductHasCategory::where('category', $request->category)->get()->first()->id;
-            
             $dataProduct = [
                 "image" => $pathImage,
-                "category_id" => $categoryId,
                 "name" => $request->name,
                 "brand" => $request->brand,
                 "description" => $request->description,
@@ -89,15 +74,22 @@ class ProductController extends Controller
                 "amount" => $request->amount,
                 "price" => number_format($request->price, 2, ',', '.')
             ];
-
+            
             $product = Product::create($dataProduct);
+
+            $categoryObject = Category::where('category', $request->category)->get()->first();
+
+            $category = ProductHasCategories::create([
+                'product_id' => $product->id,
+                'category_id' => $categoryObject->id
+            ]);
 
             if (!$product && $category) {
                 throw new Exception("Error Processing Request", 509);
             }
 
             Session::flash('alert-class', 'alert-success');
-            Session::flash('message', 'Produto cadastrado com sucesso!'); 
+            Session::flash('message', 'Produto cadastrado com sucesso!');
             return redirect()->route('products');
             
         } catch(Exception $err) {
@@ -111,18 +103,15 @@ class ProductController extends Controller
      * @param  \App\Product  $product
      * @return \Illuminate\Http\Response
      */
-    public function search(Request $request)
+    public function search(HttpRequest $request)
     {
         try {
             $query = $request->get('query');
-            $category = ProductHasCategory::where('category', 'LIKE', "%{$query}%")->get()->first();
-            if (!$category) {
-                $products = Product::where('name', 'LIKE', "%{$query}%")->orWhere('brand', 'LIKE', "%{$query}%")->get();
-            } else {
-                $products = Product::where('category_id', $category->id)->get();
-                if (!$products) {
-                    throw new Exception("could not find products with the informed query on table `products`", 404);
-                }
+
+            $products = Product::where('name', 'LIKE', "%{$query}%")->orWhere('brand', 'LIKE', "%{$query}%")->get();
+
+            if (!$products) {
+                throw new Exception("could not find products with the informed query on table `products`", 404);
             }
             return view('admin.products.search')->with('products', $products);
         } catch(Exception $err) {
@@ -139,11 +128,12 @@ class ProductController extends Controller
     public function edit($productId)
     {
         try {
-            $product = Product::find($productId)->with('category')->get()->first();
-            $categories = ProductHasCategory::all();
-            
-            if (!$product && !$categories) {
-                throw new Exception('user not found', 404);
+            $product = Product::where('id', $productId)->get()->first();
+
+            $categories = Category::all();
+
+            if (!$product || !$categories) {
+                throw new Exception('user or categories not found on database', 404);
             }
 
             return view('admin.products.edit')->with(['product' => $product, 'categories' => $categories]);
@@ -160,26 +150,29 @@ class ProductController extends Controller
      * @param  \App\Product  $product
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
+    public function update(HttpRequest $request)
     {
         try {
             $productId = $request->id;
+
             $product = Product::find($productId);
+            if (!$product) {
+                throw new Exception("Product not found", 404);
+            }
 
+            $categoryId = Category::where('category', $request->category)->get()->first()->id;
+
+
+            $updateCategory = ProductHasCategories::where('category_id', $categoryId)->update(['category_id' => $categoryId]);
             $pathImage = null;
-
             if ($request->hasFile('image') && $request->image->isValid()) {
                 $pathImage = $request->image->store('products');
             }
 
-            if (!$product)
-                throw new Exception("Product not found", 404);
-            
             $product->image = $pathImage;
             $product->name = $request->name;
             $product->brand = $request->brand;
             $product->description = $request->description;
-            $product->category = $request->category;
             $product->sale = $request->sale == 0 ? false : true;
             $product->amount = $request->amount;
             $product->price = number_format($request->price, 2, ',', '.');
@@ -203,13 +196,15 @@ class ProductController extends Controller
     public function destroy($id)
     {
         try {
+            $productHasCategory = ProductHasCategories::where('product_id', $id)->delete();
             $product = Product::destroy($id);
-            if (!$product) {
+
+            if (!$productHasCategory || !$product) {
                 throw new Exception("Error Processing Request", 509);
             }
             return true;
         } catch(Exception $err) {
-            return $err.getMessage();
+            return $err->getMessage();
         }
     }
 }

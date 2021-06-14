@@ -48,13 +48,18 @@
                         </div>
 
                         <div class="col-md-3">
-                            <label for="amount">Quantidade Disponível</label>
+                            <label for="amount">Qtd Disponível (Estoque)</label>
                             <input type="number" id="amount" name="amount" class="form-control" placeholder="Ex.: 20" required>
                         </div>
 
                         <div class="col-md-3">
-                            <label for="price">Valor</label>
-                            <input type="text" id="price" name="price" class="form-control" placeholder="Ex.: R$ 4,56" required>
+                        <label for="price">Valor</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="addon1">R$</span>
+                                </div>
+                                <input type="text" id="price" name="price" class="form-control" aria-describedby="addon1" placeholder="Ex.: R$ 4,56" required>
+                            </div>
                         </div>
                     </div>
 
